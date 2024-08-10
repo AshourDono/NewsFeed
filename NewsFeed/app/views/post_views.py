@@ -16,6 +16,6 @@ post_views.route('/posts', methods=['POST'])(post_controller.create_post)
 post_views.route('/posts/<int:post_id>',
                  methods=['GET'])(post_controller.get_post)
 post_views.route('/posts/<int:post_id>',
-                 methods=['PUT'])(post_controller.update_post)
+                 methods=['PATCH'])(post_controller.update_post)
 post_views.route('/posts/<int:post_id>',
                  methods=['DELETE'])(post_controller.delete_post)
