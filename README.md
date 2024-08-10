@@ -57,9 +57,7 @@ To run this project, you will need to edit the following environment variables t
     
 ## API Reference
 
-### Posts Endpoints: Done
-
-#### Get a post
+#### Example: Get a post
 
 ```http
   GET /api/posts/${post_id}
@@ -105,7 +103,8 @@ Response Body
 | `user_id` | `int`    | **Required**. user_id   |
 | `content` | `string` | **Required**. content   |
 
-### On Progress: User, Comment, Like, Share, Follow endpoints.
+### Done: Post and User endpoints.
+### On Progress: Comment, Like, Share and Follow endpoints.
 
 
 ## Screenshots
