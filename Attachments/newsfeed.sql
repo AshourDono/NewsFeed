@@ -16,15 +16,15 @@ CREATE TABLE `posts` (
     `user_id` BIGINT UNSIGNED NOT NULL,
     `content` TEXT NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `shares` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `post_id` BIGINT UNSIGNED NOT NULL,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`),
-    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `comments` (
@@ -33,22 +33,22 @@ CREATE TABLE `comments` (
     `post_id` BIGINT UNSIGNED NOT NULL,
     `content` TEXT NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`),
-    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `follows` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `follower_id` BIGINT UNSIGNED NOT NULL,
     `followee_id` BIGINT UNSIGNED NOT NULL,
-    FOREIGN KEY (`follower_id`) REFERENCES `users`(`id`),
-    FOREIGN KEY (`followee_id`) REFERENCES `users`(`id`)
+    FOREIGN KEY (`follower_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`followee_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `likes` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `post_id` BIGINT UNSIGNED NOT NULL,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`),
-    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON DELETE CASCADE
 );
