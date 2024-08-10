@@ -1,1 +1,1 @@
-from .exceptions import InvalidPostDataException, PostNotFoundException
+from .exceptions import InvalidDataException, NotFoundException

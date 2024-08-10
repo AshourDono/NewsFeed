@@ -2,7 +2,7 @@
 
 from flask import request, jsonify
 from app.services import PostService
-from app.exceptions import InvalidPostDataException, PostNotFoundException
+from app.exceptions import InvalidDataException, NotFoundException
 
 
 class PostController:
@@ -23,17 +23,17 @@ class PostController:
 
             # Validate that user_id and content are present
             if not user_id or not content:
-                raise InvalidPostDataException(
+                raise InvalidDataException(
                     "User ID and content are required")
 
             post = self.post_service.create_post(user_id, content)
             return jsonify(post), 201
 
-        except InvalidPostDataException as e:
+        except InvalidDataException as e:
             return jsonify({'error': str(e)}), 400
 
         except Exception as e:
-            return jsonify({'error': 'An unexpected error occurred'}), 500
+            return jsonify({'error': str(e)}), 500
 
     def get_post(self, post_id):
         try:
@@ -42,13 +42,13 @@ class PostController:
             if post:
                 return jsonify(post)
 
-            raise PostNotFoundException(f"Post with id {post_id} not found")
+            raise NotFoundException(f"Post with id {post_id} not found")
 
-        except PostNotFoundException as e:
+        except NotFoundException as e:
             return jsonify({'error': str(e)}), 404
 
         except Exception as e:
-            return jsonify({'error': 'An unexpected error occurred'}), 500
+            return jsonify({'error': str(e)}), 500
 
     def update_post(self, post_id):
         try:
@@ -60,7 +60,7 @@ class PostController:
 
             # Validate that content is present
             if not content:
-                raise InvalidPostDataException(
+                raise InvalidDataException(
                     "Content is required to update the post")
 
             post = self.post_service.update_post(post_id, content)
@@ -68,16 +68,16 @@ class PostController:
             if post:
                 return jsonify(post)
 
-            raise PostNotFoundException(f"Post with id {post_id} not found")
+            raise NotFoundException(f"Post with id {post_id} not found")
 
-        except PostNotFoundException as e:
+        except NotFoundException as e:
             return jsonify({'error': str(e)}), 404
 
-        except InvalidPostDataException as e:
+        except InvalidDataException as e:
             return jsonify({'error': str(e)}), 400
 
         except Exception as e:
-            return jsonify({'error': 'An unexpected error occurred'}), 500
+            return jsonify({'error': str(e)}), 500
 
     def delete_post(self, post_id):
         try:
