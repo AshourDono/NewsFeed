@@ -13,6 +13,7 @@ As **Flask** is a microframework, I needed a directory structure, so I created t
 
  - [Chatgpt](https://chatgpt.com/share/83f6184f-3840-48b7-83e0-33b4c7922986)
  - [Flask Docs](https://flask.palletsprojects.com/en/3.0.x/)
+ - [Readme Editor](https://readme.so/editor)
 
 
 ## Environment Variables
@@ -55,6 +56,8 @@ To run this project, you will need to edit the following environment variables t
 ```
     
 ## API Reference
+
+### Posts Endpoints: Done
 
 #### Get a post
 
@@ -102,6 +105,7 @@ Response Body
 | `user_id` | `int`    | **Required**. user_id   |
 | `content` | `string` | **Required**. content   |
 
+### On Progress: User, Comment, Like, Share, Follow endpoints.
 
 
 ## Screenshots
