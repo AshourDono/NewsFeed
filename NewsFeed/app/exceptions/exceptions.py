@@ -1,7 +1,7 @@
 # app/exceptions/exceptions.py
-class PostNotFoundException(Exception):
+class NotFoundException(Exception):
     pass
 
 
-class InvalidPostDataException(Exception):
+class InvalidDataException(Exception):
     pass
