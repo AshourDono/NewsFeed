@@ -44,7 +44,8 @@ To run this project, you will need to edit the following environment variables t
 ```
 3- DB creation:
  - get the sql scripts located in **Attachments** directory.
- - run its contents in any db app: like phpmyadmin
+ - run its contents in any db app: like phpmyadmin.
+ 
 4- DB population:
 ```bash
  cd NewsFeed
