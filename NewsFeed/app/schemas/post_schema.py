@@ -1,20 +1,11 @@
 # app/schemas/post_schema.py
-from marshmallow import Schema, fields, ValidationError, validates
+from marshmallow import Schema, fields, ValidationError, validates, validate
 
 
-# DRY
-class ContentValidationMixin:
-    @validates('content')
-    def validate_content_length(self, value: str):
-        if not (3 <= len(value) <= 300):
-            raise ValidationError(
-                "Content must be between 3 and 200 characters long."
-            )
-
-
-class PostCreateSchema(Schema, ContentValidationMixin):
+class PostCreateSchema(Schema):
     user_id = fields.Int(required=True)
-    content = fields.Str(required=True)
+    content = fields.Str(required=True, validate=validate.Length(
+        3, 300))
 
     @validates('user_id')
     def validate_user_id(self, value: int):
@@ -22,8 +13,9 @@ class PostCreateSchema(Schema, ContentValidationMixin):
             raise ValidationError("User ID must be greater than 0")
 
 
-class PostUpdateSchema(Schema, ContentValidationMixin):
-    content = fields.Str(required=True)
+class PostUpdateSchema(Schema):
+    content = fields.Str(required=True, validate=validate.Length(
+        3, 300))
 
 
 # Create schema instances
