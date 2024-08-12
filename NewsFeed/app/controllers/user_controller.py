@@ -1,6 +1,6 @@
 # app/controllers/user_controller.py
 
-from flask import request, jsonify
+from flask import Response, request, jsonify
 from app.services import UserService
 from app.exceptions import InvalidDataException, NotFoundException
 
@@ -9,11 +9,11 @@ class UserController:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def create_user(self):
+    def create_user(self) -> Response:
         try:
-            user_name = request.json.get('user_name')
-            email = request.json.get('email')
-            password = request.json.get('password')
+            user_name: str = request.json.get('user_name')
+            email: str = request.json.get('email')
+            password: str = request.json.get('password')
 
             # Validate provided fields
             if not user_name or not isinstance(user_name, str) or len(user_name) < 3 or len(user_name) > 30:
@@ -39,7 +39,7 @@ class UserController:
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    def get_user(self, user_id):
+    def get_user(self, user_id: int) -> Response:
         try:
             user = self.user_service.get_user(user_id)
 
@@ -54,7 +54,7 @@ class UserController:
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    def update_user(self, user_id):
+    def update_user(self, user_id: int) -> Response:
         try:
             # Get the values from the request
             user_name = request.json.get('user_name')
@@ -96,7 +96,7 @@ class UserController:
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    def delete_user(self, user_id):
+    def delete_user(self, user_id: int) -> Response:
         try:
             self.user_service.delete_user(user_id)
             return jsonify({'message': 'user deleted'}), 204
