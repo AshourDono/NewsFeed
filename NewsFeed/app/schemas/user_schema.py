@@ -1,46 +1,65 @@
 # app/schemas/user_schema.py
 
-from marshmallow import Schema, fields, ValidationError, validates
+from marshmallow import Schema, fields, ValidationError, validates, pre_load
+from marshmallow.validate import Length
 
 
-# DRY
-class UserDataValidationMixin:
-    @validates('user_name')
-    def validate_user_name_length(self, value: str):
-        if value and not (3 <= len(value) <= 30):
-            raise ValidationError(
-                "Username must be between 3 and 30 characters long."
-            )
+class ValidationMixin():
+    @pre_load
+    def trim_whitespace(self, data, **kwargs):
+        # Trim whitespace from all string fields before validation
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.strip()
+        return data
 
     @validates('password')
-    def validate_password_length(self, value: str):
-        if value and not (3 <= len(value) <= 50):
+    def validate_password_strength(self, value: str):
+        # Example password strength validation
+        if not any(char.isdigit() for char in value):
+            raise ValidationError("Password must contain at least one digit.")
+        if not any(char.isupper() for char in value):
             raise ValidationError(
-                "Password must be between 3 and 50 characters long."
+                "Password must contain at least one uppercase letter.")
+        if not any(char.islower() for char in value):
+            raise ValidationError(
+                "Password must contain at least one lowercase letter.")
+        if not any(char in '!@#$%^&*()_+' for char in value):
+            raise ValidationError(
+                "Password must contain at least one special character.")
+# Custom field for validating string length
+
+
+class ValidatedStr(fields.Str, ValidationMixin):
+    def __init__(self, *args, min_length=3, max_length=50, **kwargs):
+        self.min_length = min_length
+        self.max_length = max_length
+        super().__init__(validate=Length(min=min_length, max=max_length), *args, **kwargs)
+
+    def _validate(self, value):
+        super()._validate(value)
+        if len(value) < self.min_length or len(value) > self.max_length:
+            raise ValidationError(
+                f"Field must be between {self.min_length} and {
+                    self.max_length} characters long."
             )
 
+# Schema for creating a new user
 
-class UserCreateSchema(Schema, UserDataValidationMixin):
-    user_name = fields.Str(required=True)
+
+class UserCreateSchema(Schema, ValidationMixin):
+    user_name = ValidatedStr(required=True, min_length=3, max_length=30)
     email = fields.Email(required=True)
-    password = fields.Str(required=True)
+    password = ValidatedStr(required=True, min_length=8, max_length=50)
 
 
-class UserUpdateSchema(Schema, UserDataValidationMixin):
-    user_name = fields.Str(required=False)
+# Schema for updating user details
+
+
+class UserUpdateSchema(Schema):
+    user_name = ValidatedStr(required=False, min_length=3, max_length=30)
     email = fields.Email(required=False)
-    password = fields.Str(required=False)
-
-    def validate(self, data, *args, **kwargs):
-        errors = {}
-
-        # Check if at least one field is provided
-        if not any(field in data for field in ['user_name', 'email', 'password']):
-            errors['__all__'] = "At least one of user_name, email, or password must be provided."
-
-        if errors:
-            raise ValidationError(errors)
-        return data
+    password = ValidatedStr(required=False, min_length=8, max_length=50)
 
 
 # Create schema instances
