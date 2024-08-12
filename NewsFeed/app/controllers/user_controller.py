@@ -1,45 +1,48 @@
 # app/controllers/user_controller.py
 
-from flask import request, jsonify
+from flask import Response, request, jsonify
+from marshmallow import ValidationError
+from mysql.connector import Error as MySQLError
 from app.services import UserService
-from app.exceptions import InvalidDataException, NotFoundException
+from app.exceptions import NotFoundException
+from app.schemas import user_create_schema, user_update_schema
 
 
 class UserController:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def create_user(self):
+    def create_user(self) -> Response:
         try:
-            user_name = request.json.get('user_name')
-            email = request.json.get('email')
-            password = request.json.get('password')
+            # Load and validate the input data using the schema
+            user_data = user_create_schema.load(request.json)
 
-            # Validate provided fields
-            if not user_name or not isinstance(user_name, str) or len(user_name) < 3 or len(user_name) > 30:
-                return jsonify({'error': 'Invalid or missing user_name'}), 400
+            user_name: str = user_data['user_name']
+            email: str = user_data['email']
+            password: str = user_data['password']
 
-            if not email or not isinstance(email, str):
-                return jsonify({'error': 'Invalid or missing email'}), 400
-
-            if not password or not isinstance(password, str) or len(password) < 8 or len(password) > 50:
-                return jsonify({'error': 'Invalid or missing password'}), 400
-
-            # Check if all of the fields are provided
-            if not user_name or not email or not password:
-                raise InvalidDataException(
-                    "Username, email and password are required")
-
+            # Proceed with user creation
             user = self.user_service.create_user(user_name, email, password)
             return jsonify(user), 201
 
-        except InvalidDataException as e:
-            return jsonify({'error': str(e)}), 400
+        except ValidationError as e:
+            # Handle schema validation errors
+            return jsonify(e.messages), 400
+
+        except MySQLError as e:
+            # Handle specific MySQL error codes
+            if e.errno == 1062:
+                return jsonify({'error': 'Duplicate entry (unique constraint violation).'}), 400
+            elif e.errno in {1451, 1452}:
+                return jsonify({'error': 'Foreign key constraint violation.'}), 400
+            else:
+                return jsonify({'error': f"Database error occurred: {str(e)}"}), 500
 
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Handle unexpected errors
+            return jsonify({'error': f"An unexpected error occurred: {str(e)}"}), 500
 
-    def get_user(self, user_id):
+    def get_user(self, user_id: int) -> Response:
         try:
             user = self.user_service.get_user(user_id)
 
@@ -54,28 +57,14 @@ class UserController:
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    def update_user(self, user_id):
+    def update_user(self, user_id: int) -> Response:
         try:
-            # Get the values from the request
-            user_name = request.json.get('user_name')
-            email = request.json.get('email')
-            password = request.json.get('password')
+            # Load and validate the input data
+            user_data = user_update_schema.load(request.json)
 
-            # Check if any of the fields are provided
-            if not user_name and not email and not password:
-                raise InvalidDataException(
-                    "At least one of 'user_name', 'email', or 'password' must be provided"
-                )
-
-            # Validate provided fields
-            if user_name is not None and (not isinstance(user_name, str) or len(user_name) < 3 or len(user_name) > 30):
-                return jsonify({'error': 'Invalid user_name'}), 400
-
-            if email is not None and (not isinstance(email, str) or len(email) > 50):
-                return jsonify({'error': 'Invalid email'}), 400
-
-            if password is not None and (not isinstance(password, str) or len(password) < 8 or len(password) > 50):
-                return jsonify({'error': 'Invalid password'}), 400
+            user_name: str | None = user_data.get('user_name')
+            email: str | None = user_data.get('email')
+            password: str | None = user_data.get('password')
 
             # Perform the update
             user = self.user_service.update_user(
@@ -83,20 +72,27 @@ class UserController:
             )
 
             if user:
-                return jsonify(user)
+                # Assuming 200 OK for successful update
+                return jsonify(user), 200
 
-            raise NotFoundException(f"user with id {user_id} not found")
+            raise NotFoundException(f"User with ID {user_id} not found")
 
-        except NotFoundException as e:
-            return jsonify({'error': str(e)}), 404
+        except ValidationError as e:
+            return jsonify(e.messages), 400
 
-        except InvalidDataException as e:
-            return jsonify({'error': str(e)}), 400
+        except MySQLError as e:
+            # Handle specific MySQL error codes
+            if e.errno == 1062:
+                return jsonify({'error': 'Duplicate entry (unique constraint violation).'}), 400
+            elif e.errno in {1451, 1452}:
+                return jsonify({'error': 'Foreign key constraint violation.'}), 400
+            else:
+                return jsonify({'error': f"Database error occurred: {str(e)}"}), 500
 
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': f"An unexpected error occurred: {str(e)}"}), 500
 
-    def delete_user(self, user_id):
+    def delete_user(self, user_id: int) -> Response:
         try:
             self.user_service.delete_user(user_id)
             return jsonify({'message': 'user deleted'}), 204

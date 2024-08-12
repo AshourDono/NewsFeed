@@ -1,10 +1,10 @@
-# app/repositories/post_repository.py
+# app/repositories/user_repository.py
 
 class UserRepository:
     def __init__(self, db_connection):
         self.db_connection = db_connection
 
-    def create_user(self, user_name, email, password):
+    def create_user(self, user_name: str, email: str, password: str):
         cursor = self.db_connection.cursor()
         cursor.execute("""
             INSERT INTO users (username, email, password) 
@@ -13,12 +13,12 @@ class UserRepository:
         self.db_connection.commit()
         return cursor.lastrowid
 
-    def get_user(self, user_id):
+    def get_user(self, user_id: int):
         cursor = self.db_connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
         return cursor.fetchone()
 
-    def update_user(self, user_id, user_name=None, email=None, password=None):
+    def update_user(self, user_id: int, user_name: str | None = None, email: str | None = None, password: str | None = None):
         cursor = self.db_connection.cursor()
         update_fields = []
         update_values = []
@@ -42,7 +42,7 @@ class UserRepository:
         cursor.execute(update_query, update_values)
         self.db_connection.commit()
 
-    def delete_user(self, user_id):
+    def delete_user(self, user_id: int):
         cursor = self.db_connection.cursor()
         cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
         self.db_connection.commit()
