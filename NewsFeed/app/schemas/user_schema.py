@@ -1,5 +1,5 @@
 # app/schemas/user_schema.py
-# app/schemas/post_schema.py
+
 from marshmallow import Schema, fields, ValidationError, validates
 
 
