@@ -1,4 +1,4 @@
-# app/blueprints/post_blueprint
+# app/blueprints/user_blueprint
 
 from flask import Blueprint
 from app.controllers import UserController

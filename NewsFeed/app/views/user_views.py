@@ -1,4 +1,5 @@
 # app/views/user_views.py
+
 from app.blueprints import user_blueprint, user_controller
 
 user_blueprint.route('/users', methods=['POST'])(user_controller.create_user)

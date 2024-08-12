@@ -1,4 +1,4 @@
-# app/repositories/post_repository.py
+# app/repositories/user_repository.py
 
 class UserRepository:
     def __init__(self, db_connection):

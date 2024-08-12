@@ -1,8 +1,11 @@
 # app/controllers/post_controller.py
 
 from flask import Response, request, jsonify
+from marshmallow import ValidationError
+from mysql.connector import Error as MySQLError
 from app.services import PostService
-from app.exceptions import InvalidDataException, NotFoundException
+from app.exceptions import NotFoundException
+from app.schemas import post_create_schema, post_update_schema
 
 
 class PostController:
@@ -11,29 +14,29 @@ class PostController:
 
     def create_post(self) -> Response:
         try:
-            user_id: int = request.json.get('user_id')
-            content: str = request.json.get('content')
+            post_data = post_create_schema.load(request.json)
 
-            # Validate that user_id and content are of the desired types
-            if not user_id or not isinstance(user_id, int):
-                return jsonify({'error': 'Invalid or missing user_id'}), 400
-
-            if not content or not isinstance(content, str) or len(content) > 300:
-                return jsonify({'error': 'Invalid or missing content'}), 400
-
-            # Validate that user_id and content are present
-            if not user_id or not content:
-                raise InvalidDataException(
-                    "User ID and content are required")
+            user_id: int = post_data['user_id']
+            content: str = post_data['content']
 
             post = self.post_service.create_post(user_id, content)
             return jsonify(post), 201
 
-        except InvalidDataException as e:
-            return jsonify({'error': str(e)}), 400
+        except ValidationError as e:
+            return jsonify(e.messages), 400
+
+        except MySQLError as e:
+            # Handle specific MySQL error codes
+            if e.errno == 1062:
+                return jsonify({'error': 'Duplicate entry (unique constraint violation).'}), 400
+            elif e.errno in {1451, 1452}:
+                return jsonify({'error': 'Foreign key constraint violation.'}), 400
+            else:
+                return jsonify({'error': f"Database error occurred: {str(e)}"}), 500
 
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Handle unexpected errors
+            return jsonify({'error': f"An unexpected error occurred: {str(e)}"}), 500
 
     def get_post(self, post_id: int) -> Response:
         try:
@@ -47,34 +50,31 @@ class PostController:
         except NotFoundException as e:
             return jsonify({'error': str(e)}), 404
 
+        except MySQLError as e:
+            # Handle specific MySQL error codes
+            if e.errno == 1062:
+                return jsonify({'error': 'Duplicate entry (unique constraint violation).'}), 400
+            elif e.errno in {1451, 1452}:
+                return jsonify({'error': 'Foreign key constraint violation.'}), 400
+            else:
+                return jsonify({'error': f"Database error occurred: {str(e)}"}), 500
+
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     def update_post(self, post_id: int) -> Response:
         try:
-            content = request.json.get('content')
+            post_data = post_update_schema.load(request.json)
 
-            # Validate that content is of the desired type
-            if not content or not isinstance(content, str) or len(content) > 300:
-                return jsonify({'error': 'Invalid or missing content'}), 400
-
-            # Validate that content is present
-            if not content:
-                raise InvalidDataException(
-                    "Content is required to update the post")
+            content: str = post_data['content']
 
             post = self.post_service.update_post(post_id, content)
 
             if post:
                 return jsonify(post)
 
-            raise NotFoundException(f"Post with id {post_id} not found")
-
-        except NotFoundException as e:
-            return jsonify({'error': str(e)}), 404
-
-        except InvalidDataException as e:
-            return jsonify({'error': str(e)}), 400
+        except ValidationError as err:
+            return jsonify(err.messages), 400
 
         except Exception as e:
             return jsonify({'error': str(e)}), 500

@@ -1,4 +1,4 @@
-# app/services/post_service.py
+# app/services/user_service.py
 
 from app.repositories import UserRepository
 
