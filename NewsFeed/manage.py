@@ -2,7 +2,6 @@
 
 from flask import Flask
 from config import Config
-from app.extensions import db_connection
 from app.views import post_views, user_views
 
 app = Flask(__name__)
@@ -13,4 +12,4 @@ app.register_blueprint(post_views)
 app.register_blueprint(user_views)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
