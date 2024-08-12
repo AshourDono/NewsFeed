@@ -2,7 +2,7 @@
 from marshmallow import Schema, fields, ValidationError, validates, validate
 
 
-class PostCreateSchema(Schema):
+class PostSchema(Schema):
     user_id = fields.Int(required=True)
     content = fields.Str(required=True, validate=validate.Length(
         3, 300))
@@ -13,11 +13,6 @@ class PostCreateSchema(Schema):
             raise ValidationError("User ID must be greater than 0")
 
 
-class PostUpdateSchema(Schema):
-    content = fields.Str(required=True, validate=validate.Length(
-        3, 300))
-
-
 # Create schema instances
-post_create_schema = PostCreateSchema()
-post_update_schema = PostUpdateSchema()
+post_create_schema = PostSchema()
+post_update_schema = PostSchema(only=("content",))
