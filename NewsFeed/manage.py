@@ -2,7 +2,7 @@
 
 from flask import Flask
 from config import Config
-from app.views import post_blueprint, user_blueprint
+from app.blueprints import post_blueprint, user_blueprint
 
 app = Flask(__name__)
 app.config.from_object(Config)
